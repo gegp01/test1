@@ -1,0 +1,34 @@
+setwd("C:/Users/phylo/Dropbox/hantavirus.global/")
+getwd()
+
+# dat<-read.table("matthew.data.txt", row.names=1, sep="\t", header=TRUE)
+# dat<-read.table("community.data.txt", sep="\t", header=TRUE)
+
+dat<-read.table("data.aug2013.txt", sep="\t", header=TRUE)
+dat$taxa<-paste(dat$GENUS, dat$SPECIES, sep="_")
+
+# sort out synonyms and sister species' selection
+require(R.utils)
+dat$taxa<-capitalize(tolower(dat$taxa))
+syn<-read.table("synonyms.aug2013.txt", header=TRUE)
+
+dat$id<-paste(dat$ASSEMBLAGE_ID, dat$taxa)
+syn$id<-paste(syn$assamblage.ID, syn$taxa.in.data)
+dat<-merge(dat, syn, by="id")
+
+abundances<-aggregate(dat$N_INDIV, list(dat$ASSEMBLAGE_ID), sum)
+par(mfrow=c(2,1), cex.main=0.8)
+qqnorm(abundances[,2], col="red", main="abundances")
+qqline(abundances[,2])
+qqnorm(log10(abundances[,2]),col="red", main="log10 abundances")
+qqline(log10(abundances[,2]))
+
+hist(abundances[,2], col="red", xlab="abundances", main="")
+hist(log10(abundances[,2]),col="red", xlab="log10 abundances", main="")
+
+
+# TO PRODUCE A PRESENCE/ABSENCE MATRIX
+d<-data.frame(row.names=row.names(dat), com = dat$ASSEMBLAGE_ID, taxa = dat$synonym, abundance = dat$N_INDIV)
+COM<-table(d$com, d$taxa)
+X<-data.frame(com=row.names(COM))
+
